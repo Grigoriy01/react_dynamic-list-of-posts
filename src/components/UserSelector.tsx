@@ -1,6 +1,22 @@
 import React from 'react';
+import { User } from '../types/User';
 
-export const UserSelector: React.FC = () => {
+type Props = {
+  users: User[];
+  isLoading: boolean;
+  isError: string | null;
+  currentUser: User | null;
+  onSelectedUser: (user: User) => void;
+};
+
+export const UserSelector: React.FC<Props> = ({
+  users,
+  isLoading,
+  isError,
+  currentUser,
+  onSelectedUser,
+}) => {
+
   return (
     <div data-cy="UserSelector" className="dropdown is-active">
       <div className="dropdown-trigger">
@@ -9,8 +25,13 @@ export const UserSelector: React.FC = () => {
           className="button"
           aria-haspopup="true"
           aria-controls="dropdown-menu"
-        >
-          <span>Choose a user</span>
+          >
+          {!currentUser ? (
+            <span>Choose a user</span>
+          ) : (
+            <span>{currentUser.name}</span>
+          )
+          }
 
           <span className="icon is-small">
             <i className="fas fa-angle-down" aria-hidden="true" />
