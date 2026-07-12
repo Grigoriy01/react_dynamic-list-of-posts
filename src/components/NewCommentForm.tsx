@@ -1,6 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
+import cn from 'classnames';
+import { CommentData } from '../types/Comment';
 
-export const NewCommentForm: React.FC = () => {
+type Props = {
+  postId: number;
+};
+
+export const NewCommentForm: React.FC<Props> = ({ postId }) => {
+  const [queryName, setQueryName] = useState('');
+  const [queryEmail, setQueryEmail] = useState('');
+  const [queryText, setQueryText] = useState('');
+
+  const [isLoading, setIsLoading] = useState(false)
+  const [isError, setIsError] = useState<string | null>(null)
+
   return (
     <form data-cy="NewCommentForm">
       <div className="field" data-cy="NameField">
@@ -12,26 +25,32 @@ export const NewCommentForm: React.FC = () => {
           <input
             type="text"
             name="name"
+            value={queryName}
             id="comment-author-name"
             placeholder="Name Surname"
-            className="input is-danger"
+            className={cn('input', { 'is-danger': queryName })}
+            onChange={e => setQueryName(e.target.value)}
           />
 
           <span className="icon is-small is-left">
             <i className="fas fa-user" />
           </span>
 
-          <span
-            className="icon is-small is-right has-text-danger"
-            data-cy="ErrorIcon"
-          >
-            <i className="fas fa-exclamation-triangle" />
-          </span>
+          {queryName && (
+            <span
+              className="icon is-small is-right has-text-danger"
+              data-cy="ErrorIcon"
+            >
+              <i className="fas fa-exclamation-triangle" />
+            </span>
+          )}
         </div>
 
-        <p className="help is-danger" data-cy="ErrorMessage">
-          Name is required
-        </p>
+        {queryName && (
+          <p className="help is-danger" data-cy="ErrorMessage">
+            Name is required
+          </p>
+        )}
       </div>
 
       <div className="field" data-cy="EmailField">
@@ -43,26 +62,31 @@ export const NewCommentForm: React.FC = () => {
           <input
             type="text"
             name="email"
+            value={queryEmail}
             id="comment-author-email"
             placeholder="email@test.com"
-            className="input is-danger"
+            className={cn('input', { 'is-danger': queryEmail })}
+            onChange={e => setQueryEmail(e.target.value)}
           />
-
           <span className="icon is-small is-left">
             <i className="fas fa-envelope" />
           </span>
 
-          <span
-            className="icon is-small is-right has-text-danger"
-            data-cy="ErrorIcon"
-          >
-            <i className="fas fa-exclamation-triangle" />
-          </span>
+          {queryEmail && (
+            <span
+              className="icon is-small is-right has-text-danger"
+              data-cy="ErrorIcon"
+            >
+              <i className="fas fa-exclamation-triangle" />
+            </span>
+          )}
         </div>
 
-        <p className="help is-danger" data-cy="ErrorMessage">
+        {queryEmail &&
+          <p className="help is-danger" data-cy="ErrorMessage">
           Email is required
         </p>
+        }
       </div>
 
       <div className="field" data-cy="BodyField">
@@ -74,14 +98,18 @@ export const NewCommentForm: React.FC = () => {
           <textarea
             id="comment-body"
             name="body"
+            value={queryText}
             placeholder="Type comment here"
-            className="textarea is-danger"
+            className={cn('input', { 'is-danger': queryText })}
+            onChange={e => setQueryText(e.target.value)}
           />
         </div>
 
-        <p className="help is-danger" data-cy="ErrorMessage">
+        {queryText &&
+          <p className="help is-danger" data-cy="ErrorMessage">
           Enter some text
         </p>
+        }
       </div>
 
       <div className="field is-grouped">

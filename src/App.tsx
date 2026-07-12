@@ -5,23 +5,24 @@ import 'bulma/css/bulma.css';
 import '@fortawesome/fontawesome-free/css/all.css';
 import './App.scss';
 
-import {
-  getUsers,
-  getPosts,
-  getComments,
-  createComment,
-  deletePostComment,
-} from '../public/api/api';
+import { getUsers, getPosts } from '../public/api/apiFetch';
 
 import { PostsList } from './components/PostsList';
 import { PostDetails } from './components/PostDetails';
 import { UserSelector } from './components/UserSelector';
 import { Loader } from './components/Loader';
 import { User } from './types/User';
+import { Post } from './types/Post';
 
 export const App = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [posts, setPosts] = useState<Post[]>([]);
+
+  const [openPostID, setOpenPostID] = useState<number | null>(null);
+
+  const [isPostsLoading, setIsPostsLoading] = useState(false);
+  const [isPostsError, setPostsIsError] = useState<string | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState<string | null>(null);
@@ -57,6 +58,40 @@ export const App = () => {
   }, []);
 
   useEffect(() => {
+    let ignore = false;
+
+    if (!currentUser) {
+      setPosts([]);
+      return;
+    }
+
+    const loadPosts = async () => {
+      setIsPostsLoading(true);
+
+      try {
+        const dataPosts = await getPosts(currentUser.id);
+        if (!ignore) {
+          setPosts(dataPosts);
+          setPostsIsError(null);
+        }
+      } catch {
+        if (ignore) return;
+        setPostsIsError('Something went wrong!');
+      } finally {
+        if (!ignore) {
+          setIsPostsLoading(false);
+        }
+      }
+    };
+
+    loadPosts();
+
+    return () => {
+      ignore = true;
+    };
+  }, [currentUser]);
+
+  useEffect(() => {
     const handleHashChange = () => {
       const idStringFromUrl = window.location.hash.replace('#user-', '');
       if (!idStringFromUrl) {
@@ -81,7 +116,51 @@ export const App = () => {
       window.removeEventListener('hashchange', handleHashChange);
     };
   }, [users]);
+
+  useEffect(() => {
+    window.location.hash = '';
+  }, []);
   //#endregion useEffect
+
+  //#region ---------functions----------
+  const renderingContent = () => {
+    const postsLength = posts.length;
+
+    if (!currentUser) {
+      return <p data-cy="NoSelectedUser">No user selected</p>;
+    }
+
+    if (isPostsLoading) {
+      return <Loader />;
+    }
+
+    if (isPostsError) {
+      return (
+        <div className="notification is-danger" data-cy="PostsLoadingError">
+          {isPostsError}
+        </div>
+      );
+    }
+
+    if (postsLength === 0) {
+      return (
+        <div className="notification is-warning" data-cy="NoPostsYet">
+          No posts yet
+        </div>
+      );
+    }
+
+    return (
+      <PostsList
+        posts={posts}
+        onOpenPostID={setOpenPostID}
+        openPostID={openPostID}
+      />
+    );
+  };
+
+  const selectedPost = posts.find(post => post.id === openPostID);
+  //#endregion functions
 
   return (
     <main className="section">
@@ -94,29 +173,11 @@ export const App = () => {
                   users={users}
                   isLoading={isLoading}
                   isError={isError}
-                  onSelectedUser={setCurrentUser}
                   currentUser={currentUser}
                 />
               </div>
-
-              <div className="block" data-cy="MainContent">
-                <p data-cy="NoSelectedUser">No user selected</p>
-
-                <Loader />
-
-                <div
-                  className="notification is-danger"
-                  data-cy="PostsLoadingError"
-                >
-                  Something went wrong!
-                </div>
-
-                <div className="notification is-warning" data-cy="NoPostsYet">
-                  No posts yet
-                </div>
-
-                <PostsList />
-              </div>
+              {renderingContent()}
+              <div className="block" data-cy="MainContent"></div>
             </div>
           </div>
 
@@ -127,12 +188,17 @@ export const App = () => {
               'is-parent',
               'is-8-desktop',
               'Sidebar',
-              'Sidebar--open',
+              {'Sidebar--open': openPostID}
             )}
           >
-            <div className="tile is-child box is-success ">
-              <PostDetails />
-            </div>
+            {selectedPost && (
+              <div className="tile is-child box is-success ">
+                <PostDetails
+                  selectedPost={selectedPost}
+                  key={selectedPost.id}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
