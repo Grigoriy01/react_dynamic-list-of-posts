@@ -154,7 +154,7 @@ export const App = () => {
       <PostsList
         posts={posts}
         onOpenPostID={setOpenPostID}
-        openPostID={openPostID}
+        openedPostID={openPostID}
       />
     );
   };
@@ -188,7 +188,7 @@ export const App = () => {
               'is-parent',
               'is-8-desktop',
               'Sidebar',
-              {'Sidebar--open': openPostID}
+              { 'Sidebar--open': openPostID },
             )}
           >
             {selectedPost && (

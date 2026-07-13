@@ -31,21 +31,21 @@ export const PostDetails: React.FC<Props> = ({ selectedPost }) => {
 
     const loadComments = async () => {
       setIsCommentsLoading(true);
+      setComments([])
+      setCommentsIsError(null);
 
       try {
         const dataComments = await getComments(id);
         if (!ignore) {
           setComments(dataComments);
           setCommentsIsError(null);
+          setIsCommentsLoading(false);
         }
       } catch {
         if (ignore) return;
         setCommentsIsError('Something went wrong');
-      } finally {
-        if (!ignore) {
-          setIsCommentsLoading(false);
-        }
-      }
+        setIsCommentsLoading(false);
+      } 
     };
     loadComments();
 
@@ -55,7 +55,13 @@ export const PostDetails: React.FC<Props> = ({ selectedPost }) => {
   }, [selectedPost]);
 
   const handleAddComment = async (commentData: CommentData) => {
-    // weiter soll ich hier schreiben
+    setCommentsIsError(null);
+    try {
+      const newComment = await createComment(commentData, selectedPost.id);
+      setComments(prev => [...prev, newComment]);
+    } catch {
+      setCommentsIsError('Something went wrong');
+    }
   };
 
   const handelDeleteComment = (idComment: number) => {
@@ -82,62 +88,55 @@ export const PostDetails: React.FC<Props> = ({ selectedPost }) => {
               {isCommentsError}
             </div>
           )}
-          {!isCommentsLoading &&
-            !isCommentsError && (
-              <>
-                {commentsLength && (
-                  <p className="title is-4" data-cy="NoCommentsMessage">
-                    No comments yet
-                  </p>
-                )}
+          {!isCommentsLoading && !isCommentsError && (
+            <>
+              {commentsLength && !isCommentsLoading && !isCommentsError && (
+                <p className="title is-4" data-cy="NoCommentsMessage">
+                  No comments yet
+                </p>
+              )}
 
-                {!commentsLength && <p className="title is-4">Comments:</p>}
+              {!commentsLength && <p className="title is-4">Comments:</p>}
 
-                {comments.map(comment => (
-                  <article className="message is-small" data-cy="Comment">
-                    <div className="message-header">
-                      <a
-                        href="mailto:misha@mate.academy"
-                        data-cy="CommentAuthor"
-                      >
-                        {comment.name}
-                      </a>
-                      <button
-                        data-cy="CommentDelete"
-                        type="button"
-                        className="delete is-small"
-                        aria-label="delete"
-                        onClick={() => handelDeleteComment(comment.id)}
-                      >
-                        delete button
-                      </button>
-                    </div>
+              {comments.map(comment => (
+                <article className="message is-small" data-cy="Comment">
+                  <div className="message-header">
+                    <a href="mailto:misha@mate.academy" data-cy="CommentAuthor">
+                      {comment.name}
+                    </a>
+                    <button
+                      data-cy="CommentDelete"
+                      type="button"
+                      className="delete is-small"
+                      aria-label="delete"
+                      onClick={() => handelDeleteComment(comment.id)}
+                    >
+                      delete button
+                    </button>
+                  </div>
 
-                    <div className="message-body" data-cy="CommentBody">
-                      {comment.body}
-                    </div>
-                  </article>
-                ))}
+                  <div className="message-body" data-cy="CommentBody">
+                    {comment.body}
+                  </div>
+                </article>
+              ))}
 
-                {isWriteComment && (
-                  <button
-                    data-cy="WriteCommentButton"
-                    type="button"
-                    className="button is-link"
-                    onClick={() => setIsWriteComment(false)}
-                  >
-                    Write a comment
-                  </button>
-                )}
-              </>
-            )}
+              {isWriteComment && (
+                <button
+                  data-cy="WriteCommentButton"
+                  type="button"
+                  className="button is-link"
+                  onClick={() => setIsWriteComment(false)}
+                >
+                  Write a comment
+                </button>
+              )}
+            </>
+          )}
         </div>
 
-        {!isWriteComment && (
-          <NewCommentForm
-            postId={selectedPost.id}
-            onAddComment={handleAddComment}
-          />
+        {!isCommentsError && !isWriteComment && (
+          <NewCommentForm onAddComment={handleAddComment} />
         )}
       </div>
     </div>

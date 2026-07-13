@@ -5,13 +5,13 @@ import { Post } from '../types/Post';
 
 type Props = {
   posts: Post[];
-  openPostID: number | null;
+  openedPostID: number | null;
   onOpenPostID: (postId: number | null) => void;
 };
 
 export const PostsList: React.FC<Props> = ({
   posts,
-  openPostID,
+  openedPostID,
   onOpenPostID,
 }) => {
   return (
@@ -30,7 +30,7 @@ export const PostsList: React.FC<Props> = ({
 
         <tbody>
           {posts.map(post => {
-            const openedButton = openPostID === post.id ? null : post.id;
+            const openedButton = openedPostID === post.id ? null : post.id;
 
             return (
               <tr data-cy="Post" key={post.id}>

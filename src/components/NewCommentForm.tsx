@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import cn from 'classnames';
 import { CommentData } from '../types/Comment';
-import { text } from 'stream/consumers';
 
 type Props = {
-  postId: number;
   onAddComment: (comment: CommentData) => void;
 };
 
-export const NewCommentForm: React.FC<Props> = ({ postId, onAddComment }) => {
+export const NewCommentForm: React.FC<Props> = ({ onAddComment }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -16,7 +14,6 @@ export const NewCommentForm: React.FC<Props> = ({ postId, onAddComment }) => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
   const [validError, setValidError] = useState<{
     name?: string;
     email?: string;
@@ -46,7 +43,6 @@ export const NewCommentForm: React.FC<Props> = ({ postId, onAddComment }) => {
     }
 
     setIsSubmitting(true);
-    setSubmitError(null);
 
     try {
       await onAddComment({
@@ -56,14 +52,14 @@ export const NewCommentForm: React.FC<Props> = ({ postId, onAddComment }) => {
       });
 
       setFormData(prev => ({ ...prev, body: '' }));
-    } catch {
-      setSubmitError('Something went wrong');
+    } catch (error) {
+      console.log(error)
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleClearInputWarning = (
+  const handleChangeAndClearError = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
@@ -88,7 +84,7 @@ export const NewCommentForm: React.FC<Props> = ({ postId, onAddComment }) => {
             id="comment-author-name"
             placeholder="Name Surname"
             className={cn('input', { 'is-danger': validError.name })}
-            onChange={handleClearInputWarning}
+            onChange={handleChangeAndClearError}
           />
 
           <span className="icon is-small is-left">
@@ -125,7 +121,7 @@ export const NewCommentForm: React.FC<Props> = ({ postId, onAddComment }) => {
             id="comment-author-email"
             placeholder="email@test.com"
             className={cn('input', { 'is-danger': validError.email })}
-            onChange={handleClearInputWarning}
+            onChange={handleChangeAndClearError}
           />
           <span className="icon is-small is-left">
             <i className="fas fa-envelope" />
@@ -160,7 +156,7 @@ export const NewCommentForm: React.FC<Props> = ({ postId, onAddComment }) => {
             value={formData.body}
             placeholder="Type comment here"
             className={cn('input', { 'is-danger': validError.body })}
-            onChange={handleClearInputWarning}
+            onChange={handleChangeAndClearError}
           />
         </div>
 
@@ -190,5 +186,6 @@ export const NewCommentForm: React.FC<Props> = ({ postId, onAddComment }) => {
         </div>
       </div>
     </form>
+
   );
 };
