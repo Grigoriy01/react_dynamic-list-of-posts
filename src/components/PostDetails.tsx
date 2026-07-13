@@ -10,6 +10,7 @@ import { Loader } from './Loader';
 import { NewCommentForm } from './NewCommentForm';
 import { Post } from '../types/Post';
 import { Comment } from '../types/Comment';
+import { CommentData } from '../types/Comment';
 
 type Props = {
   selectedPost: Post;
@@ -53,11 +54,14 @@ export const PostDetails: React.FC<Props> = ({ selectedPost }) => {
     };
   }, [selectedPost]);
 
-  const handelDeleteComment = (idComment: number) => {
+  const handleAddComment = async (commentData: CommentData) => {
+    // weiter soll ich hier schreiben
+  };
 
-    setComments(prev => prev.filter(comment => comment.id !== idComment))
-    deleteComment(idComment)
-  }
+  const handelDeleteComment = (idComment: number) => {
+    setComments(prev => prev.filter(comment => comment.id !== idComment));
+    deleteComment(idComment);
+  };
 
   const commentsLength = comments.length === 0;
 
@@ -78,51 +82,63 @@ export const PostDetails: React.FC<Props> = ({ selectedPost }) => {
               {isCommentsError}
             </div>
           )}
+          {!isCommentsLoading &&
+            !isCommentsError && (
+              <>
+                {commentsLength && (
+                  <p className="title is-4" data-cy="NoCommentsMessage">
+                    No comments yet
+                  </p>
+                )}
 
-          {commentsLength && (
-            <p className="title is-4" data-cy="NoCommentsMessage">
-              No comments yet
-            </p>
-          )}
+                {!commentsLength && <p className="title is-4">Comments:</p>}
 
-          {!commentsLength && <p className="title is-4">Comments:</p>}
+                {comments.map(comment => (
+                  <article className="message is-small" data-cy="Comment">
+                    <div className="message-header">
+                      <a
+                        href="mailto:misha@mate.academy"
+                        data-cy="CommentAuthor"
+                      >
+                        {comment.name}
+                      </a>
+                      <button
+                        data-cy="CommentDelete"
+                        type="button"
+                        className="delete is-small"
+                        aria-label="delete"
+                        onClick={() => handelDeleteComment(comment.id)}
+                      >
+                        delete button
+                      </button>
+                    </div>
 
-          {comments.map(comment => (
-            <article className="message is-small" data-cy="Comment">
-              <div className="message-header">
-                <a href="mailto:misha@mate.academy" data-cy="CommentAuthor">
-                  {comment.name}
-                </a>
-                <button
-                  data-cy="CommentDelete"
-                  type="button"
-                  className="delete is-small"
-                  aria-label="delete"
-                  onClick={() => handelDeleteComment(comment.id)}
-                >
-                  delete button
-                </button>
-              </div>
+                    <div className="message-body" data-cy="CommentBody">
+                      {comment.body}
+                    </div>
+                  </article>
+                ))}
 
-              <div className="message-body" data-cy="CommentBody">
-                {comment.body}
-              </div>
-            </article>
-          ))}
-
-          {isWriteComment && (
-            <button
-              data-cy="WriteCommentButton"
-              type="button"
-              className="button is-link"
-              onClick={() => setIsWriteComment(false)}
-            >
-              Write a comment
-            </button>
-          )}
+                {isWriteComment && (
+                  <button
+                    data-cy="WriteCommentButton"
+                    type="button"
+                    className="button is-link"
+                    onClick={() => setIsWriteComment(false)}
+                  >
+                    Write a comment
+                  </button>
+                )}
+              </>
+            )}
         </div>
 
-        {!isWriteComment && <NewCommentForm postId={selectedPost.id} />}
+        {!isWriteComment && (
+          <NewCommentForm
+            postId={selectedPost.id}
+            onAddComment={handleAddComment}
+          />
+        )}
       </div>
     </div>
   );
