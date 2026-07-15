@@ -25,15 +25,15 @@ export const NewCommentForm: React.FC<Props> = ({ onAddComment }) => {
 
     const validationFields: typeof validationErrors = {};
 
-    if (!formData.name) {
+    if (!formData.name.trim()) {
       validationFields.name = 'Name is required';
     }
 
-    if (!formData.email) {
+    if (!formData.email.trim()) {
       validationFields.email = 'Email is required';
     }
 
-    if (!formData.body) {
+    if (!formData.body.trim()) {
       validationFields.body = 'Enter some text';
     }
 
@@ -184,7 +184,6 @@ export const NewCommentForm: React.FC<Props> = ({ onAddComment }) => {
         </div>
 
         <div className="control">
-          {/* eslint-disable-next-line react/button-has-type */}
           <button
             type="reset"
             className="button is-link is-light"
