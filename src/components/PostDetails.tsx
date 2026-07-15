@@ -4,7 +4,7 @@ import {
   getComments,
   createComment,
   deleteComment,
-} from '../../public/api/apiFetch';
+} from '../../public/api/api';
 
 import { Loader } from './Loader';
 import { NewCommentForm } from './NewCommentForm';
@@ -21,9 +21,9 @@ export const PostDetails: React.FC<Props> = ({ selectedPost }) => {
 
   const [comments, setComments] = useState<Comment[]>([]);
 
-  const [isWriteComment, setIsWriteComment] = useState(true);
+  const [isAddingComment, setIsAddingComment] = useState(true);
 
-  const [isCommentsLoading, setIsCommentsLoading] = useState(false);
+  const [isCommentsLoading, setIsCommentsLoading] = useState(true);
   const [isCommentsError, setCommentsIsError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -31,40 +31,46 @@ export const PostDetails: React.FC<Props> = ({ selectedPost }) => {
 
     const loadComments = async () => {
       setIsCommentsLoading(true);
-      setComments([])
+      setComments([]);
       setCommentsIsError(null);
 
       try {
         const dataComments = await getComments(id);
+
         if (!ignore) {
           setComments(dataComments);
           setCommentsIsError(null);
           setIsCommentsLoading(false);
         }
       } catch {
-        if (ignore) return;
+        if (ignore) {
+          return;
+        }
+
         setCommentsIsError('Something went wrong');
         setIsCommentsLoading(false);
-      } 
+      }
     };
+
     loadComments();
 
     return () => {
       ignore = true;
     };
-  }, [selectedPost]);
+  }, [id]);
 
   const handleAddComment = async (commentData: CommentData) => {
     setCommentsIsError(null);
     try {
       const newComment = await createComment(commentData, selectedPost.id);
+
       setComments(prev => [...prev, newComment]);
     } catch {
       setCommentsIsError('Something went wrong');
     }
   };
 
-  const handelDeleteComment = (idComment: number) => {
+  const handleDeleteComment = (idComment: number) => {
     setComments(prev => prev.filter(comment => comment.id !== idComment));
     deleteComment(idComment);
   };
@@ -90,7 +96,7 @@ export const PostDetails: React.FC<Props> = ({ selectedPost }) => {
           )}
           {!isCommentsLoading && !isCommentsError && (
             <>
-              {commentsLength && !isCommentsLoading && !isCommentsError && (
+              {commentsLength && (
                 <p className="title is-4" data-cy="NoCommentsMessage">
                   No comments yet
                 </p>
@@ -99,9 +105,13 @@ export const PostDetails: React.FC<Props> = ({ selectedPost }) => {
               {!commentsLength && <p className="title is-4">Comments:</p>}
 
               {comments.map(comment => (
-                <article className="message is-small" data-cy="Comment">
+                <article
+                  className="message is-small"
+                  data-cy="Comment"
+                  key={comment.id}
+                >
                   <div className="message-header">
-                    <a href="mailto:misha@mate.academy" data-cy="CommentAuthor">
+                    <a href={`mailto:${comment.email}`} data-cy="CommentAuthor">
                       {comment.name}
                     </a>
                     <button
@@ -109,7 +119,7 @@ export const PostDetails: React.FC<Props> = ({ selectedPost }) => {
                       type="button"
                       className="delete is-small"
                       aria-label="delete"
-                      onClick={() => handelDeleteComment(comment.id)}
+                      onClick={() => handleDeleteComment(comment.id)}
                     >
                       delete button
                     </button>
@@ -121,12 +131,12 @@ export const PostDetails: React.FC<Props> = ({ selectedPost }) => {
                 </article>
               ))}
 
-              {isWriteComment && (
+              {isAddingComment && (
                 <button
                   data-cy="WriteCommentButton"
                   type="button"
                   className="button is-link"
-                  onClick={() => setIsWriteComment(false)}
+                  onClick={() => setIsAddingComment(false)}
                 >
                   Write a comment
                 </button>
@@ -135,7 +145,7 @@ export const PostDetails: React.FC<Props> = ({ selectedPost }) => {
           )}
         </div>
 
-        {!isCommentsError && !isWriteComment && (
+        {!isCommentsError && !isAddingComment && (
           <NewCommentForm onAddComment={handleAddComment} />
         )}
       </div>

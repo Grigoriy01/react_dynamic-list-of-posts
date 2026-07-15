@@ -1,36 +1,40 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { User } from '../types/User';
 import cn from 'classnames';
-import { drop } from 'cypress/types/lodash';
 
 type Props = {
   users: User[];
   isLoading: boolean;
   isError: string | null;
   currentUser: User | null;
+  onUserSelect: (userId: number) => void;
 };
 
 export const UserSelector: React.FC<Props> = ({
   users,
-  //isLoading,
-  //isError,
   currentUser,
+  onUserSelect,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      return;
+    }
 
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as Node;
       const container = dropdownRef.current;
+
       if (container && !container?.contains(target)) {
         setIsOpen(false);
       }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
@@ -66,9 +70,15 @@ export const UserSelector: React.FC<Props> = ({
         <div className="dropdown-content">
           {users.map(user => (
             <a
+              key={user.id}
               href={`#user-${user.id}`}
-              className="dropdown-item"
-              onClick={() => setIsOpen(false)}
+              className={cn('dropdown-item', {
+                'is-active': currentUser?.id === user.id,
+              })}
+              onClick={() => {
+                setIsOpen(false);
+                onUserSelect(user.id);
+              }}
             >
               {user.name}
             </a>

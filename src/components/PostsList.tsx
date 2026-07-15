@@ -1,6 +1,4 @@
-import React, { useState } from 'react';
 import cn from 'classnames';
-
 import { Post } from '../types/Post';
 
 type Props = {

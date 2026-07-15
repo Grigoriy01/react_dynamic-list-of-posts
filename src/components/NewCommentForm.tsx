@@ -14,7 +14,7 @@ export const NewCommentForm: React.FC<Props> = ({ onAddComment }) => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [validError, setValidError] = useState<{
+  const [validationErrors, setValidationErrors] = useState<{
     name?: string;
     email?: string;
     body?: string;
@@ -23,7 +23,7 @@ export const NewCommentForm: React.FC<Props> = ({ onAddComment }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const validationFields: typeof validError = {};
+    const validationFields: typeof validationErrors = {};
 
     if (!formData.name) {
       validationFields.name = 'Name is required';
@@ -38,7 +38,8 @@ export const NewCommentForm: React.FC<Props> = ({ onAddComment }) => {
     }
 
     if (Object.keys(validationFields).length > 0) {
-      setValidError(validationFields);
+      setValidationErrors(validationFields);
+
       return;
     }
 
@@ -50,23 +51,27 @@ export const NewCommentForm: React.FC<Props> = ({ onAddComment }) => {
         email: formData.email,
         body: formData.body,
       });
-
       setFormData(prev => ({ ...prev, body: '' }));
     } catch (error) {
-      console.log(error)
+      //The error is handled at the parent component level;
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleChangeAndClearError = (
+  const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
 
-    setValidError(prev => ({ ...prev, [name]: undefined }));
+    setValidationErrors(prev => ({ ...prev, [name]: undefined }));
 
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleClearForm = () => {
+    setFormData({ name: '', email: '', body: '' });
+    setValidationErrors({ name: undefined, email: undefined, body: undefined });
   };
 
   return (
@@ -83,15 +88,15 @@ export const NewCommentForm: React.FC<Props> = ({ onAddComment }) => {
             value={formData.name}
             id="comment-author-name"
             placeholder="Name Surname"
-            className={cn('input', { 'is-danger': validError.name })}
-            onChange={handleChangeAndClearError}
+            className={cn('input', { 'is-danger': validationErrors.name })}
+            onChange={handleInputChange}
           />
 
           <span className="icon is-small is-left">
             <i className="fas fa-user" />
           </span>
 
-          {validError.name && (
+          {validationErrors.name && (
             <span
               className="icon is-small is-right has-text-danger"
               data-cy="ErrorIcon"
@@ -101,7 +106,7 @@ export const NewCommentForm: React.FC<Props> = ({ onAddComment }) => {
           )}
         </div>
 
-        {validError.name && (
+        {validationErrors.name && (
           <p className="help is-danger" data-cy="ErrorMessage">
             Name is required
           </p>
@@ -120,14 +125,14 @@ export const NewCommentForm: React.FC<Props> = ({ onAddComment }) => {
             value={formData.email}
             id="comment-author-email"
             placeholder="email@test.com"
-            className={cn('input', { 'is-danger': validError.email })}
-            onChange={handleChangeAndClearError}
+            className={cn('input', { 'is-danger': validationErrors.email })}
+            onChange={handleInputChange}
           />
           <span className="icon is-small is-left">
             <i className="fas fa-envelope" />
           </span>
 
-          {validError.email && (
+          {validationErrors.email && (
             <span
               className="icon is-small is-right has-text-danger"
               data-cy="ErrorIcon"
@@ -137,7 +142,7 @@ export const NewCommentForm: React.FC<Props> = ({ onAddComment }) => {
           )}
         </div>
 
-        {validError.email && (
+        {validationErrors.email && (
           <p className="help is-danger" data-cy="ErrorMessage">
             Email is required
           </p>
@@ -155,12 +160,12 @@ export const NewCommentForm: React.FC<Props> = ({ onAddComment }) => {
             name="body"
             value={formData.body}
             placeholder="Type comment here"
-            className={cn('input', { 'is-danger': validError.body })}
-            onChange={handleChangeAndClearError}
+            className={cn('input', { 'is-danger': validationErrors.body })}
+            onChange={handleInputChange}
           />
         </div>
 
-        {validError.body && (
+        {validationErrors.body && (
           <p className="help is-danger" data-cy="ErrorMessage">
             Enter some text
           </p>
@@ -180,12 +185,15 @@ export const NewCommentForm: React.FC<Props> = ({ onAddComment }) => {
 
         <div className="control">
           {/* eslint-disable-next-line react/button-has-type */}
-          <button type="reset" className="button is-link is-light">
+          <button
+            type="reset"
+            className="button is-link is-light"
+            onClick={handleClearForm}
+          >
             Clear
           </button>
         </div>
       </div>
     </form>
-
   );
 };
