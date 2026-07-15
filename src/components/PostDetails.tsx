@@ -24,7 +24,7 @@ export const PostDetails: React.FC<Props> = ({ selectedPost }) => {
   const [isAddingComment, setIsAddingComment] = useState(true);
 
   const [isCommentsLoading, setIsCommentsLoading] = useState(true);
-  const [isCommentsError, setCommentsIsError] = useState<string | null>(null);
+  const [isCommentsError, setIsCommentsError] = useState<string | null>(null);
 
   useEffect(() => {
     let ignore = false;
@@ -32,14 +32,14 @@ export const PostDetails: React.FC<Props> = ({ selectedPost }) => {
     const loadComments = async () => {
       setIsCommentsLoading(true);
       setComments([]);
-      setCommentsIsError(null);
+      setIsCommentsError(null);
 
       try {
         const dataComments = await getComments(id);
 
         if (!ignore) {
           setComments(dataComments);
-          setCommentsIsError(null);
+          setIsCommentsError(null);
           setIsCommentsLoading(false);
         }
       } catch {
@@ -47,7 +47,7 @@ export const PostDetails: React.FC<Props> = ({ selectedPost }) => {
           return;
         }
 
-        setCommentsIsError('Something went wrong');
+        setIsCommentsError('Something went wrong');
         setIsCommentsLoading(false);
       }
     };
@@ -58,15 +58,19 @@ export const PostDetails: React.FC<Props> = ({ selectedPost }) => {
       ignore = true;
     };
   }, [id]);
+  
+  useEffect(() => {
+    setIsAddingComment(true)
+  }, [id])
 
   const handleAddComment = async (commentData: CommentData) => {
-    setCommentsIsError(null);
+    setIsCommentsError(null);
     try {
       const newComment = await createComment(commentData, selectedPost.id);
 
       setComments(prev => [...prev, newComment]);
     } catch {
-      setCommentsIsError('Something went wrong');
+      setIsCommentsError('Something went wrong');
     }
   };
 
